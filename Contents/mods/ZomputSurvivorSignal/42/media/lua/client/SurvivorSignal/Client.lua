@@ -61,7 +61,7 @@ Events.OnFillInventoryObjectContextMenu.Add(function(pn, context, items)
     end)
     option.notAvailable = not S.phone(p:getInventory())
     local saved = snapshots[pn]
-    if saved and saved.day == S.day() and S.phone(p:getInventory()) then
+    if saved and saved.day == S.day() and S.phone(p:getInventory(), true) then
         context:addOption(text("Reopen"), pn, function(n) show(n, saved) end)
     end
 end)
@@ -71,7 +71,7 @@ function ISMiniMapOuter:render()
     if oldRender then oldRender(self) end
     local pn = self.playerNum or self.inner.playerNum or 0
     local p, saved = getSpecificPlayer(pn), snapshots[pn]
-    if not S.alive(p) or not S.phone(p:getInventory()) or not saved or saved.day ~= S.day() then return end
+    if not S.alive(p) or not S.phone(p:getInventory(), true) or not saved or saved.day ~= S.day() then return end
     local inner, api = self.inner, self.inner.mapAPI
     for _,r in ipairs(saved.rows) do
         local x,y = api:worldToUIX(r.x,r.y), api:worldToUIY(r.x,r.y)
@@ -85,7 +85,7 @@ Events.OnTick.Add(function()
     n=n+1; if n%60 ~= 0 then return end
     for pn, saved in pairs(snapshots) do
         local p = getSpecificPlayer(pn)
-        if not S.alive(p) or not S.phone(p:getInventory()) or saved.day ~= S.day() then
+        if not S.alive(p) or not S.phone(p:getInventory(), true) or saved.day ~= S.day() then
             closeWindow(windows[pn]); windows[pn]=nil; snapshots[pn]=nil
         end
     end

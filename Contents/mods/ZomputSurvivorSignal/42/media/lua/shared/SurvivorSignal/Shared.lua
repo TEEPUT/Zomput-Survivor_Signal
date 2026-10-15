@@ -9,14 +9,14 @@ function S.day()
 end
 
 -- Only inventory and carried bags; never floors, vehicle seats, or nearby containers.
-function S.phone(container)
+function S.phone(container, includeBroken)
     if not container then return nil end
     local items = container:getItems()
     for i=0,items:size()-1 do
         local item = items:get(i)
-        if item:getFullType() == S.item and item:getCondition() > 0 then return item end
+        if item:getFullType() == S.item and (includeBroken or item:getCondition() > 0) then return item end
         if item:IsInventoryContainer() then
-            local phone = S.phone(item:getInventory())
+            local phone = S.phone(item:getInventory(), includeBroken)
             if phone then return phone end
         end
     end

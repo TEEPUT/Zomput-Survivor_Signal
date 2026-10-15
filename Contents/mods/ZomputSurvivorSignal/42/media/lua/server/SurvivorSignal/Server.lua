@@ -1,6 +1,7 @@
 require "SurvivorSignal/Shared"
 local S = SurvivorSignal
 local ticks = 0
+local lastRequest = {}
 local function state()
     local data = ModData.getOrCreate(S.module)
     data.used = data.used or {}
@@ -46,7 +47,15 @@ function S.scan(p)
 end
 Events.OnClientCommand.Add(function(module, command, p, args)
     if module ~= S.module or not p then return end
-    if command == "scan" then S.scan(p) end
+    if command == "scan" then
+        local name = p:getUsername()
+        if lastRequest[name] and ticks-lastRequest[name] < 30 then return end
+        lastRequest[name] = ticks
+        S.scan(p)
+    end
+end)
+Events.OnServerStarted.Add(function()
+    print("[ZomputSurvivorSignal] ready; durability loss="..S.loss().."%")
 end)
 -- Dedicated-server starter grants, also covering existing saves and reconnects.
 Events.OnTick.Add(function()

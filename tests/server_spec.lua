@@ -60,6 +60,7 @@ date=4; SandboxVars.SurvivorSignal.DurabilityLoss=100; SurvivorSignal.scan(a)
 check(last().args.condition==0,'final use clamps durability to zero')
 date=5; SurvivorSignal.scan(a)
 check(last().args.key=='NoPhone','broken requester rejected')
+check(SurvivorSignal.phone(a:getInventory(),true)~=nil,'final-use snapshot can remain while broken phone is carried')
 local nestedPhone=phone(50)
 local bag={getFullType=function() return 'Base.Bag' end,IsInventoryContainer=function() return true end,getInventory=function() return inventory({nestedPhone}) end}
 check(SurvivorSignal.phone(inventory({bag}))==nestedPhone,'nested carried bag supported')
@@ -72,4 +73,18 @@ check(SurvivorSignal.loss()==3,'invalid sandbox value uses default')
 local new=player('New',{}); players={new}
 for i=1,240 do handlers.OnTick() end
 check(new:getInventory():getItems():size()==1,'starter grant is idempotent')
+date=6; bPhone.condition=100; b.hidden=true; players={new,b}; SurvivorSignal.scan(new)
+check(#last().args.rows==0,'invisible administrator excluded')
+date=7; b.hidden=false; b.dead=true; SurvivorSignal.scan(new)
+check(#last().args.rows==0,'dead target excluded')
+date=8; b.dead=false; players={new}; SandboxVars.SurvivorSignal.DurabilityLoss=0
+SurvivorSignal.scan(new)
+check(last().args.condition==94,'zero-cost setting preserves current condition')
+local before=#responses
+handlers.OnClientCommand('ForeignModule','scan',new,{})
+check(#responses==before,'foreign network module ignored')
+handlers.OnClientCommand(SurvivorSignal.module,'scan',new,{x=99,day='forged'})
+before=#responses
+handlers.OnClientCommand(SurvivorSignal.module,'scan',new,{})
+check(#responses==before,'duplicate packets throttled')
 print(tostring(count)..' checks passed')

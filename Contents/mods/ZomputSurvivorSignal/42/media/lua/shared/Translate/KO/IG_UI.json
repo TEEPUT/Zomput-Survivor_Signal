@@ -1,0 +1,9 @@
+{
+  "IGUI_SurvivorSignal_Scan": "생존자 위치 조회 (게임 하루 1회)",
+  "IGUI_SurvivorSignal_Reopen": "오늘의 위치 기록 보기",
+  "IGUI_SurvivorSignal_Close": "닫기",
+  "IGUI_SurvivorSignal_Snapshot": "조회 시점의 위치 · 실시간 추적 아님",
+  "IGUI_SurvivorSignal_Empty": "정상 핸드폰을 휴대한 다른 생존자가 없습니다.",
+  "IGUI_SurvivorSignal_NoPhone": "작동 가능한 생존자 신호 핸드폰을 휴대해야 합니다.",
+  "IGUI_SurvivorSignal_Used": "오늘은 이미 조회했습니다. 게임 시간 자정에 다시 사용할 수 있습니다."
+}

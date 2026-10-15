@@ -1,0 +1,9 @@
+{
+  "IGUI_SurvivorSignal_Scan": "Locate survivors (once per game day)",
+  "IGUI_SurvivorSignal_Reopen": "View today's signal snapshot",
+  "IGUI_SurvivorSignal_Close": "Close",
+  "IGUI_SurvivorSignal_Snapshot": "Snapshot, not live tracking",
+  "IGUI_SurvivorSignal_Empty": "No other survivors carrying a working phone.",
+  "IGUI_SurvivorSignal_NoPhone": "Carry a working Survivor Signal phone to scan.",
+  "IGUI_SurvivorSignal_Used": "Already used today. Available again at game midnight."
+}

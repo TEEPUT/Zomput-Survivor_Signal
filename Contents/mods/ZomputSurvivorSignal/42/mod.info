@@ -1,0 +1,6 @@
+name=Zomput-Survivor_Signal
+id=ZomputSurvivorSignal
+author=TEEPUT
+description=Daily survivor location snapshots using a durable 1993 cellular phone. Server-authoritative multiplayer.
+version=1.0.0
+poster=poster.png

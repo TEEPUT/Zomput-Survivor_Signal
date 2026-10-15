@@ -1,0 +1,12 @@
+module SurvivorSignal
+{
+    item Phone
+    {
+        Type = Normal,
+        DisplayName = Survivor Signal Phone,
+        Icon = SurvivorSignalPhone,
+        Weight = 0.4,
+        ConditionMax = 100,
+        DisplayCategory = Electronics,
+    }
+}

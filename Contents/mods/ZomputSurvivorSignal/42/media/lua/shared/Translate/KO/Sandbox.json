@@ -1,0 +1,5 @@
+{
+  "Sandbox_SurvivorSignal": "생존자 신호",
+  "Sandbox_SurvivorSignal_DurabilityLoss": "조회당 핸드폰 내구도 감소율 (%)",
+  "Sandbox_SurvivorSignal_DurabilityLoss_tooltip": "0~100, 기본 3. 검색 결과가 없어도 차감됩니다. 마지막 사용으로 핸드폰이 고장 날 수 있습니다."
+}

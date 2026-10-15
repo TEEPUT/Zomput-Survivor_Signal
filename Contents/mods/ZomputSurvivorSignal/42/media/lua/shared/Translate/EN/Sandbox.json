@@ -1,0 +1,5 @@
+{
+  "Sandbox_SurvivorSignal": "Survivor Signal",
+  "Sandbox_SurvivorSignal_DurabilityLoss": "Phone durability loss per scan (%)",
+  "Sandbox_SurvivorSignal_DurabilityLoss_tooltip": "0-100. Default 3. A scan costs durability even when no survivors are found. Final use may break the phone."
+}

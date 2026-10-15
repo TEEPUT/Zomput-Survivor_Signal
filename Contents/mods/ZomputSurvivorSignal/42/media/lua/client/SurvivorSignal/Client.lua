@@ -40,6 +40,13 @@ Events.OnServerCommand.Add(function(module, command, args)
     if module ~= S.module then return end
     if command == "result" then
         local pn = args.playerNum or 0
+        -- Server-side player slots need not match local split-screen slots.
+        if args.username then
+            for i=0,3 do
+                local localPlayer = getSpecificPlayer(i)
+                if localPlayer and localPlayer:getUsername() == args.username then pn=i; break end
+            end
+        end
         snapshots[pn] = args
         show(pn, args)
     elseif command == "error" then

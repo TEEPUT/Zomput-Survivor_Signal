@@ -43,7 +43,7 @@ function S.scan(p)
     phone:setCondition(math.max(0, phone:getCondition()-S.loss()))
     sendItemStats(phone)
     reply(p, "result", {day=today, rows=rows, condition=phone:getCondition(),
-        playerNum=p:getPlayerNum()})
+        playerNum=p:getPlayerNum(), username=name})
 end
 Events.OnClientCommand.Add(function(module, command, p, args)
     if module ~= S.module or not p then return end

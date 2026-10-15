@@ -4,7 +4,7 @@ By **TEEPUT**, for Project Zomboid **42.21** dedicated multiplayer servers.
 
 [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3820241990) · Workshop ID: `3820241990` · Mod ID: `ZomputSurvivorSignal`
 
-생존자에게 핸드폰을 한 대 지급합니다. 핸드폰 우클릭 → **생존자 위치 조회**로 게임 날짜마다 1회 사용합니다. 게임 시간 00:00에 사용 제한이 초기화됩니다.
+생존자에게 무게 **0.1**인 핸드폰을 한 대 지급합니다. 핸드폰 우클릭 → **생존자 위치 조회**로 게임 날짜마다 1회 사용합니다. 게임 시간 00:00에 사용 제한이 초기화됩니다.
 
 - 정상 핸드폰을 휴대한 다른 접속자의 조회 시점 좌표(X/Y/Z)를 팝업과 미니맵에 표시합니다. 가방 안의 핸드폰도 포함합니다.
 - 기본 내구도는 100이며 조회당 3포인트 감소합니다. 샌드박스 **생존자 신호 → 조회당 핸드폰 내구도 감소율**에서 정수 0~100을 설정합니다.

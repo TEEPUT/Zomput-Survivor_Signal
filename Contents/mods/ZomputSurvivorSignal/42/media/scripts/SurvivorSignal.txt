@@ -2,10 +2,10 @@ module SurvivorSignal
 {
     item Phone
     {
-        Type = Normal,
+        ItemType = base:normal,
         DisplayName = Survivor Signal Phone,
         Icon = SurvivorSignalPhone,
-        Weight = 0.4,
+        Weight = 0.1,
         ConditionMax = 100,
         DisplayCategory = Electronics,
     }

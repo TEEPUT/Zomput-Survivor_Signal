@@ -23,6 +23,8 @@ Server and all clients must have identical mod files. Copy `Contents/mods/Zomput
 
 This repository contains only the mod, its artwork, documentation and tests. Deployment credentials, NAS addresses, server configuration, saves and private test infrastructure belong outside this repository.
 
+See [validation results and remaining checks](VALIDATION.md).
+
 ## Tests
 
 Run `lua tests/server_spec.lua` from the repository root (Lua 5.1+, or fengari). This checks server rules with test doubles; it does not replace two-client multiplayer gameplay verification.

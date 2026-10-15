@@ -1,0 +1,11 @@
+version=1
+title=Zomput-Survivor_Signal
+description=[h1]Zomput-Survivor_Signal[/h1]
+description=Created by TEEPUT. Project Zomboid Build 42.21 multiplayer mod.
+description=Every survivor receives a durable phone. Right-click it to locate other online survivors carrying a working phone, once per in-game calendar day. The popup lists coordinates and the minimap shows snapshot markers until midnight while you carry a working phone. Locations are a snapshot, not live tracking.
+description=Each scan consumes 3 percentage points of durability by default. Sandbox: Survivor Signal > Phone durability loss per scan (0-100%). Empty scans also cost durability. No batteries or repairs. A phone at zero condition cannot scan or broadcast. Carried bags count; ground and vehicle storage do not.
+description=Daily allowance is enforced by the server per account, including reconnects, phone swaps and respawns. Dead, disconnected and invisible players are excluded. Existing characters receive one phone on first loading the mod. A new survivor receives a new phone.
+description=생존자는 핸드폰을 지급받습니다. 우클릭으로 게임 날짜마다 한 번 다른 생존자의 위치를 조회합니다. 정상 핸드폰을 휴대한 접속자만 표시하며 팝업 좌표와 미니맵에 조회 시점 위치를 보여 줍니다. 기본 내구도 소모 3%, 샌드박스에서 0~100% 설정 가능합니다.
+description=Mod ID: ZomputSurvivorSignal
+tags=Build 42;Multiplayer;Items;Interface
+visibility=public

@@ -1,5 +1,13 @@
 # Validation — Build 42.21.0
 
+## Version 1.1.1 — 2026-10-16
+
+- Fixed percent labels that expanded to visible format-token suffixes in Build 42.21 translations. Literal percent characters are composed outside translated strings.
+- The native radio sender resolves equipped devices or direct player containers; it cannot resolve an unequipped phone inside a bag. Added an owner-only, recursive item-ID state response after scans and custom battery insertion/removal. The client applies that state to the native DeviceData read by the standard power window, without sending a radio packet back.
+- The scan popup reads the scanned phone's current condition and battery when available, so a later battery replacement does not leave an old percentage in the open result window.
+- All 40 regression assertions and the three Python test cases pass, including literal percent output, recursive bag synchronization, native power changes and foreign item rejection.
+- This patch has not been verified with two connected game clients. The v1.1.0 native engine probe below predates these changes.
+
 ## Version 1.1.0 — 2026-10-16
 
 - 35 Lua regression assertions pass, including battery charge conservation, single consumption, owned-item validation, favourite protection, legacy migration, equipped-item deferral and one-time starter grants.

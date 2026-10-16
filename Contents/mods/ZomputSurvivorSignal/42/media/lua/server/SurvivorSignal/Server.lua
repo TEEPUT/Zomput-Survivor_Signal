@@ -11,6 +11,11 @@ end
 local function reply(p, command, args)
     sendServerCommand(p, S.module, command, args)
 end
+function S.syncDevice(p, phone)
+    local data=phone:getDeviceData()
+    reply(p,"deviceState",{username=p:getUsername(),phoneId=phone:getID(),
+        condition=phone:getCondition(),hasBattery=data:getHasBattery(),power=data:getPower()})
+end
 function S.migrate(p, container, depth)
     container = container or p:getInventory()
     depth = depth or 0
@@ -60,6 +65,7 @@ function S.changeBattery(p, args)
     local data = phone:getDeviceData()
     if args.remove == true then
         if data:getHasBattery() then data:getBattery(inventory) end
+        S.syncDevice(p,phone)
         return
     end
     if not S.itemId(args.batteryId) then return end
@@ -71,6 +77,7 @@ function S.changeBattery(p, args)
     -- creation/removal. Never create a second copy with a manual network packet.
     if data:getHasBattery() then data:getBattery(inventory) end
     data:addBattery(battery)
+    S.syncDevice(p,phone)
 end
 function S.scan(p)
     if not S.alive(p) then return end
@@ -98,7 +105,8 @@ function S.scan(p)
     device:setPower(math.max(0, device:getPower()-0.03))
     device:transmitBatteryChangeServer()
     sendItemStats(phone)
-    reply(p, "result", {day=today, rows=rows, condition=phone:getCondition(),
+    S.syncDevice(p,phone)
+    reply(p, "result", {day=today, rows=rows, phoneId=phone:getID(), condition=phone:getCondition(),
         power=math.floor(S.power(phone)*100+0.5), playerNum=p:getPlayerNum(), username=name})
 end
 Events.OnClientCommand.Add(function(module, command, p, args)

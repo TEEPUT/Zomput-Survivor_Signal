@@ -31,7 +31,13 @@ local function show(pn, result)
     function panel:render()
         ISPanel.render(self)
         self:drawText("Survivor Signal | "..result.day, 12, 10, 0.6, 1, 0.6, 1, UIFont.Medium)
-        self:drawText(getText("IGUI_SurvivorSignal_Status",result.condition,result.power or 0), 12, 31, 1,1,1,1,UIFont.Small)
+        local p=getSpecificPlayer(pn)
+        local phone=p and result.phoneId and p:getInventory():getItemWithIDRecursiv(result.phoneId)
+        local condition,power=result.condition,result.power or 0
+        if phone and phone:getFullType()==S.item then
+            condition=phone:getCondition(); power=math.floor(S.power(phone)*100+0.5)
+        end
+        self:drawText(S.status(condition,power), 12, 31, 1,1,1,1,UIFont.Small)
     end
     local button = ISButton:new(330, 289, 115, 28, text("Close"), panel, closeWindow)
     button:initialise(); panel:addChild(button)
@@ -39,7 +45,12 @@ local function show(pn, result)
 end
 Events.OnServerCommand.Add(function(module, command, args)
     if module ~= S.module then return end
-    if command == "result" then
+    if command == "deviceState" then
+        for pn=0,3 do
+            local p=getSpecificPlayer(pn)
+            if p and p:getUsername()==args.username then S.applyDeviceState(p,args) end
+        end
+    elseif command == "result" then
         local pn = args.playerNum or 0
         -- Server-side player slots need not match local split-screen slots.
         if args.username then
@@ -69,7 +80,7 @@ Events.OnFillInventoryObjectContextMenu.Add(function(pn, context, items)
         if S.isPhone(item) then found = true; selected = selected or item end
     end
     if not found then return end
-    local status=context:addOption(getText("IGUI_SurvivorSignal_Status",selected:getCondition(),
+    local status=context:addOption(S.status(selected:getCondition(),
         math.floor(S.power(selected)*100+0.5)),nil,nil)
     status.notAvailable=true
     if selected:getFullType()==S.item and p:getInventory():getItemWithIDRecursiv(selected:getID())==selected then

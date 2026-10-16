@@ -1,6 +1,5 @@
 {
   "IGUI_ItemCat_SurvivorSignalElectronics": "Electronics",
-  "IGUI_SurvivorSignal_Status": "Condition: %1% · Battery: %2%",
   "IGUI_SurvivorSignal_ReplaceBattery": "Replace battery (standard battery)",
   "IGUI_SurvivorSignal_RemoveBattery": "Remove battery",
   "IGUI_SurvivorSignal_Scan": "Locate survivors (once per game day)",
@@ -9,5 +8,7 @@
   "IGUI_SurvivorSignal_Snapshot": "Snapshot, not live tracking",
   "IGUI_SurvivorSignal_Empty": "No other survivors carrying a working phone.",
   "IGUI_SurvivorSignal_NoPhone": "Carry a working phone with battery power. Unequip a legacy phone to let it upgrade.",
-  "IGUI_SurvivorSignal_Used": "Already used today. Available again at game midnight."
+  "IGUI_SurvivorSignal_Used": "Already used today. Available again at game midnight.",
+  "IGUI_SurvivorSignal_ConditionLabel": "Condition",
+  "IGUI_SurvivorSignal_BatteryLabel": "Battery"
 }

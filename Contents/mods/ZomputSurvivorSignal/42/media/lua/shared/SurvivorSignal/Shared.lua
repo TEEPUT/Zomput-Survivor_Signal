@@ -19,6 +19,26 @@ function S.itemId(value)
     return type(value)=="number" and value==math.floor(value) and value>=-2147483648 and value<=2147483647
 end
 
+function S.status(condition, power)
+    return getText("IGUI_SurvivorSignal_ConditionLabel")..": "..tostring(condition).."% | "
+        ..getText("IGUI_SurvivorSignal_BatteryLabel")..": "..tostring(power).."%"
+end
+
+-- Native radio packets cannot address an unequipped device inside a bag.
+-- Resolve by owned recursive item ID, without echoing a client radio packet.
+function S.applyDeviceState(p, args)
+    if not p or type(args)~="table" or not S.itemId(args.phoneId)
+        or type(args.power)~="number" or args.power~=args.power
+        or type(args.condition)~="number" or args.condition~=args.condition then return false end
+    local phone=p:getInventory():getItemWithIDRecursiv(args.phoneId)
+    if not phone or phone:getFullType()~=S.item then return false end
+    local data=phone:getDeviceData()
+    data:setHasBattery(args.hasBattery==true)
+    data:setPower(args.hasBattery==true and math.max(0,math.min(1,args.power)) or 0)
+    phone:setCondition(math.max(0,math.min(phone:getConditionMax(),args.condition)))
+    return true
+end
+
 function S.day()
     local t = getGameTime()
     return string.format("%04d-%02d-%02d", t:getYear(), t:getMonth()+1, t:getDay()+1)

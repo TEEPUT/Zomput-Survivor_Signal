@@ -43,6 +43,7 @@ local function phone(condition,fullType)
         getCurrentUsesFloat=function(self) return self.charge or 1 end,
         SynchSpawn=function(self) self.spawns=(self.spawns or 0)+1 end,
         getCondition=function(self) return self.condition end,
+        getConditionMax=function() return 100 end,
         setCondition=function(self,n) self.condition=n end,
         IsInventoryContainer=function() return false end,condition=condition}
 end
@@ -170,4 +171,27 @@ local hinted=player('ClientAlreadyGranted',{})
 players={hinted}; handlers.OnClientCommand(SurvivorSignal.module,'starter',hinted,{granted=true})
 for i=1,240 do handlers.OnTick() end
 check(hinted:getInventory():getItems():size()==0,'persisted client grant acknowledgement prevents refill after loss')
+local clientPhone=phone(100)
+local clientOwner=player('Client',{clientPhone})
+local statePacket={phoneId=clientPhone:getID(),condition=97,hasBattery=true,power=0.97}
+check(SurvivorSignal.applyDeviceState(clientOwner,statePacket)
+    and clientPhone:getDeviceData():getPower()==0.97 and clientPhone:getCondition()==97,
+    'owner device data and radio window share server battery state')
+statePacket.hasBattery=false
+check(SurvivorSignal.applyDeviceState(clientOwner,statePacket) and SurvivorSignal.power(clientPhone)==0,
+    'battery removal clears native device power')
+statePacket.phoneId=-999
+check(not SurvivorSignal.applyDeviceState(clientOwner,statePacket),'foreign state item id ignored')
+function getText(key)
+    return key=='IGUI_SurvivorSignal_ConditionLabel' and 'Condition' or 'Battery'
+end
+check(SurvivorSignal.status(97,97)=='Condition: 97% | Battery: 97%',
+    'literal percent display avoids translator format-token expansion')
+local bagDevice=phone(100)
+local bagInv=inventory({bagDevice})
+local bagItem={getFullType=function() return 'Base.Bag' end,IsInventoryContainer=function() return true end,
+    getInventory=function() return bagInv end}
+local bagOwner=player('BagOwner',{bagItem})
+check(SurvivorSignal.applyDeviceState(bagOwner,{phoneId=bagDevice:getID(),condition=88,hasBattery=true,power=0.42})
+    and bagDevice:getDeviceData():getPower()==0.42,'unequipped nested bag phone receives power state')
 print(tostring(count)..' checks passed')

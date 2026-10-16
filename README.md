@@ -1,5 +1,7 @@
 # Zomput-Survivor_Signal
 
+![Survivor Signal cover](docs/media/signal-cover-v2.jpg)
+
 By **TEEPUT**, for Project Zomboid **42.21** dedicated multiplayer servers.
 
 [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3820241990) · Workshop ID: `3820241990` · Mod ID: `ZomputSurvivorSignal`

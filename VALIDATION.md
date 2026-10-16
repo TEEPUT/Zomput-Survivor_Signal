@@ -1,5 +1,17 @@
 # Validation — Build 42.21.0
 
+## Version 1.1.0 — 2026-10-16
+
+- 35 Lua regression assertions pass, including battery charge conservation, single consumption, owned-item validation, favourite protection, legacy migration, equipped-item deferral and one-time starter grants.
+- Three Python test cases pass: server regression suite, Lua 5.1 syntax and EN/KO translation/placeholder parity.
+- An isolated real Build 42.21.0 dedicated server reached startup and passed native Radio-class creation, electronics category, condition 100, battery insertion/removal, legacy condition/favourite preservation and single starter grant checks.
+- All three production Lua sources compile using the engine's own Kahlua compiler.
+- Engine probe: `[SIGNAL-V110] PASS Radio class, electronics, condition, native battery insertion/removal, legacy migration, single grant and Kahlua syntax`.
+- The legacy normal-item definition is retained; a separate Radio item ID allows safe migration without loading old save bytes as a different Java item class.
+- GUI appearance and real two-client synchronization, inventory save/reconnect lifecycle and third-party mod compatibility remain unverified. Native engine checks and test doubles do not establish these.
+
+## Original release
+
 Validated on 2026-10-15, using the installed 42.21.0 engine and an isolated dedicated-server container on the test NAS. Private infrastructure, addresses, credentials, saves and probe scripts are not part of this repository.
 
 ## Passed

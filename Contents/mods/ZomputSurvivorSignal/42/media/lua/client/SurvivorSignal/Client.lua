@@ -4,6 +4,7 @@ require "ISUI/ISButton"
 require "ISUI/ISScrollingListBox"
 require "ISUI/ISModalDialog"
 require "ISUI/Maps/ISMiniMap"
+require "ISUI/ISInventoryPane"
 local S = SurvivorSignal
 local snapshots, windows = {}, {}
 local function text(key) return getText("IGUI_SurvivorSignal_"..key) end
@@ -30,7 +31,7 @@ local function show(pn, result)
     function panel:render()
         ISPanel.render(self)
         self:drawText("Survivor Signal | "..result.day, 12, 10, 0.6, 1, 0.6, 1, UIFont.Medium)
-        self:drawText(text("Snapshot").." | "..result.condition.."%", 12, 31, 1,1,1,1,UIFont.Small)
+        self:drawText(getText("IGUI_SurvivorSignal_Status",result.condition,result.power or 0), 12, 31, 1,1,1,1,UIFont.Small)
     end
     local button = ISButton:new(330, 289, 115, 28, text("Close"), panel, closeWindow)
     button:initialise(); panel:addChild(button)
@@ -49,6 +50,11 @@ Events.OnServerCommand.Add(function(module, command, args)
         end
         snapshots[pn] = args
         show(pn, args)
+    elseif command == "starterAck" then
+        for i=0,3 do
+            local p=getSpecificPlayer(i)
+            if p and p:getUsername()==args.username then p:getModData().SurvivorSignalGranted=true end
+        end
     elseif command == "error" then
         local modal = ISModalDialog:new(100,100,440,150,text(args.key),false,nil,nil)
         modal:initialise(); modal:addToUIManager()
@@ -57,12 +63,28 @@ end)
 Events.OnFillInventoryObjectContextMenu.Add(function(pn, context, items)
     local p = getSpecificPlayer(pn)
     if not S.alive(p) then return end
-    local found = false
+    local found, selected = false, nil
     for _,entry in ipairs(items) do
         local item = instanceof(entry,"InventoryItem") and entry or (entry.items and entry.items[1])
-        if item and item:getFullType() == S.item then found = true end
+        if S.isPhone(item) then found = true; selected = selected or item end
     end
     if not found then return end
+    local status=context:addOption(getText("IGUI_SurvivorSignal_Status",selected:getCondition(),
+        math.floor(S.power(selected)*100+0.5)),nil,nil)
+    status.notAvailable=true
+    if selected:getFullType()==S.item and p:getInventory():getItemWithIDRecursiv(selected:getID())==selected then
+        local device=selected:getDeviceData()
+        local battery=S.battery(p:getInventory())
+        local replace=context:addOption(text("ReplaceBattery"),p,function(player,phoneId,batteryId)
+            sendClientCommand(player,S.module,"battery",{phoneId=phoneId,batteryId=batteryId})
+        end,selected:getID(),battery and battery:getID() or nil)
+        replace.notAvailable=not battery or (device:getHasBattery() and device:getPower()>=0.999)
+        if device:getHasBattery() then
+            context:addOption(text("RemoveBattery"),p,function(player,phoneId)
+                sendClientCommand(player,S.module,"battery",{phoneId=phoneId,remove=true})
+            end,selected:getID())
+        end
+    end
     local option = context:addOption(text("Scan"), p, function(player)
         sendClientCommand(player, S.module, "scan", {})
     end)
@@ -70,6 +92,33 @@ Events.OnFillInventoryObjectContextMenu.Add(function(pn, context, items)
     local saved = snapshots[pn]
     if saved and saved.day == S.day() and S.phone(p:getInventory(), true) then
         context:addOption(text("Reopen"), pn, function(n) show(n, saved) end)
+    end
+end)
+
+-- A normal inventory item never receives vanilla's weapon condition row.
+-- Add that row for our phone without changing other items or their tooltips.
+local oldDetails=ISInventoryPane.drawItemDetails
+function ISInventoryPane:drawItemDetails(item,y,xoff,yoff,red)
+    if not S.isPhone(item) then return oldDetails(self,item,y,xoff,yoff,red) end
+    local color=getCore():getGoodHighlitedColor()
+    self:drawTextAndProgressBar(getText("IGUI_invpanel_Condition")..":",
+        item:getCondition()/math.max(1,item:getConditionMax()), xoff,
+        self.headerHgt+y*self.itemHgt+yoff,
+        {r=0.6,g=0.8,b=0.5,a=0.6},{r=color:getR(),g=color:getG(),b=color:getB(),a=1})
+end
+
+-- Ask only after local character/inventory initialization. The hint can decline a
+-- starter grant, never request extra copies. Server inventory is checked again.
+local starterSent={}
+Events.OnCreatePlayer.Add(function(pn) starterSent[pn]=nil end)
+Events.OnTick.Add(function()
+    for pn=0,3 do
+        local p=getSpecificPlayer(pn)
+        if S.alive(p) and not starterSent[pn] then
+            starterSent[pn]=true
+            sendClientCommand(p,S.module,"starter",{hasPhone=S.phone(p:getInventory(),true)~=nil,
+                granted=p:getModData().SurvivorSignalGranted==true})
+        end
     end
 end)
 -- Draw after the Java map renderer; keep coordinates clipped to the minimap.

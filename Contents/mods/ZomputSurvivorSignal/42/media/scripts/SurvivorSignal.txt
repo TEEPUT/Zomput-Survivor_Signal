@@ -7,6 +7,23 @@ module SurvivorSignal
         Icon = SurvivorSignalPhone,
         Weight = 0.1,
         ConditionMax = 100,
-        DisplayCategory = Electronics,
+        DisplayCategory = SurvivorSignalElectronics,
+    }
+    item PhoneDevice
+    {
+        ItemType = base:radio,
+        DisplayName = Survivor Signal Phone,
+        Icon = SurvivorSignalPhone,
+        Weight = 0.1,
+        ConditionMax = 100,
+        DisplayCategory = SurvivorSignalElectronics,
+        IsPortable = TRUE,
+        IsTelevision = FALSE,
+        TwoWay = FALSE,
+        UsesBattery = TRUE,
+        BaseVolumeRange = 0,
+        MinChannel = 200,
+        MaxChannel = 1000000,
+        UseDelta = 0,
     }
 }

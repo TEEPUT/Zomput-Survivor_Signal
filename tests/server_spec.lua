@@ -14,16 +14,57 @@ local responses={}
 function sendServerCommand(p,module,command,args) responses[#responses+1]={command=command,args=args} end
 function sendItemStats() end
 function sendAddItemToContainer() end
+function sendRemoveItemFromContainer() end
 local function list(items) return {size=function() return #items end,get=function(_,i) return items[i+1] end} end
-local function phone(condition)
-    return {getFullType=function() return 'SurvivorSignal.Phone' end,
+local nextID=0
+local function phone(condition,fullType)
+    nextID=nextID+1
+    local data={has=true,power=1}
+    function data:getHasBattery() return self.has end
+    function data:setHasBattery(value) self.has=value end
+    function data:getPower() return self.power end
+    function data:setPower(value) self.power=value end
+    function data:transmitBatteryChangeServer() end
+    function data:getBattery(inv)
+        local old=phone(100,'Base.Battery'); old.charge=self.power
+        inv:AddItem(old); self.has=false; self.power=0
+    end
+    function data:addBattery(battery)
+        self.power=battery:getCurrentUsesFloat(); self.has=true
+        battery.owner:Remove(battery)
+    end
+    return {getFullType=function() return fullType or 'SurvivorSignal.PhoneDevice' end,
+        id=nextID,getID=function(self) return self.id end,
+        getDeviceData=function() return data end,
+        isFavorite=function(self) return self.favorite or false end,
+        setFavorite=function(self,value) self.favorite=value end,
+        isEquipped=function(self) return self.equipped or false end,
+        isCustomName=function() return false end,
+        getCurrentUsesFloat=function(self) return self.charge or 1 end,
+        SynchSpawn=function(self) self.spawns=(self.spawns or 0)+1 end,
         getCondition=function(self) return self.condition end,
         setCondition=function(self,n) self.condition=n end,
         IsInventoryContainer=function() return false end,condition=condition}
 end
 local function inventory(items)
-    return {getItems=function() return list(items) end,AddItem=function() local p=phone(100); items[#items+1]=p; return p end}
+    local inv={getItems=function() return list(items) end}
+    function inv:AddItem(value)
+        local p=type(value)=='string' and phone(100,value) or value
+        items[#items+1]=p; p.owner=self; return p
+    end
+    function inv:Remove(value) for i=#items,1,-1 do if items[i]==value then table.remove(items,i) end end end
+    function inv:getItemWithIDRecursiv(id)
+        for _,item in ipairs(items) do
+            if item.getID and item:getID()==id then return item end
+            if item:IsInventoryContainer() then
+                local found=item:getInventory():getItemWithIDRecursiv(id); if found then return found end
+            end
+        end
+    end
+    for _,item in ipairs(items) do item.owner=inv end
+    return inv
 end
+function instanceItem(fullType) return phone(100,fullType) end
 local function player(name,items)
     local md={}
     return {getUsername=function() return name end,getInventory=function() return inventory(items) end,
@@ -72,6 +113,7 @@ check(SurvivorSignal.loss()==100,'excess sandbox value clamped')
 SandboxVars.SurvivorSignal.DurabilityLoss='invalid'
 check(SurvivorSignal.loss()==3,'invalid sandbox value uses default')
 local new=player('New',{}); players={new}
+handlers.OnClientCommand(SurvivorSignal.module,'starter',new,{})
 for i=1,240 do handlers.OnTick() end
 check(new:getInventory():getItems():size()==1,'starter grant is idempotent')
 date=6; bPhone.condition=100; b.hidden=true; players={new,b}; SurvivorSignal.scan(new)
@@ -88,4 +130,44 @@ handlers.OnClientCommand(SurvivorSignal.module,'scan',new,{x=99,day='forged'})
 before=#responses
 handlers.OnClientCommand(SurvivorSignal.module,'scan',new,{})
 check(#responses==before,'duplicate packets throttled')
+
+local ownerPhone=phone(43)
+local owner=player('BatteryOwner',{ownerPhone})
+local battery=phone(100,'Base.Battery'); battery.charge=0.6
+owner:getInventory():AddItem(battery)
+ownerPhone:getDeviceData():setPower(0.2)
+SurvivorSignal.changeBattery(owner,{phoneId=ownerPhone:getID(),batteryId=battery:getID()})
+check(math.abs(ownerPhone:getDeviceData():getPower()-0.6)<0.0001,'replacement preserves actual battery charge')
+check(owner:getInventory():getItemWithIDRecursiv(battery:getID())==nil,'installed battery consumed exactly once')
+check(ownerPhone:getCondition()==43,'battery replacement does not repair physical condition')
+check(owner:getInventory():getItems():size()==2,'old partial battery returned without duplicate phone')
+SurvivorSignal.changeBattery(owner,{phoneId=ownerPhone:getID(),remove=true})
+check(not ownerPhone:getDeviceData():getHasBattery(),'battery can be removed')
+check(SurvivorSignal.phone(owner:getInventory())==nil,'unpowered phone cannot scan or appear in targets')
+local stranger=player('Other',{})
+SurvivorSignal.changeBattery(stranger,{phoneId=ownerPhone:getID(),remove=true})
+check(not ownerPhone:getDeviceData():getHasBattery(),'foreign phone id cannot be manipulated')
+local favorite=phone(100,'Base.Battery'); favorite.favorite=true
+owner:getInventory():AddItem(favorite)
+SurvivorSignal.changeBattery(owner,{phoneId=ownerPhone:getID(),batteryId=favorite:getID()})
+check(not ownerPhone:getDeviceData():getHasBattery(),'favorite battery not automatically consumed')
+local legacy=phone(34,'SurvivorSignal.Phone'); legacy.favorite=true
+local existing=player('Legacy',{legacy}); players={existing}
+handlers.OnClientCommand(SurvivorSignal.module,'starter',existing,{hasPhone=true})
+for i=1,240 do handlers.OnTick() end
+local migrated=SurvivorSignal.phone(existing:getInventory(),true)
+check(existing:getInventory():getItems():size()==1,'legacy migration plus starter request leaves one phone')
+check(migrated:getFullType()==SurvivorSignal.item and migrated:getCondition()==34 and migrated:isFavorite(),
+    'legacy phone becomes device with preserved condition and favorite')
+local equipped=phone(21,'SurvivorSignal.Phone'); equipped.equipped=true
+local held=player('Held',{equipped}); SurvivorSignal.migrate(held)
+check(held:getInventory():getItems():get(0)==equipped,'equipped legacy phone waits for unequip')
+local carried=player('AlreadyOwned',{phone(100)})
+players={carried}; handlers.OnClientCommand(SurvivorSignal.module,'starter',carried,{})
+for i=1,240 do handlers.OnTick() end
+check(carried:getInventory():getItems():size()==1,'existing device prevents a second starter grant')
+local hinted=player('ClientAlreadyGranted',{})
+players={hinted}; handlers.OnClientCommand(SurvivorSignal.module,'starter',hinted,{granted=true})
+for i=1,240 do handlers.OnTick() end
+check(hinted:getInventory():getItems():size()==0,'persisted client grant acknowledgement prevents refill after loss')
 print(tostring(count)..' checks passed')

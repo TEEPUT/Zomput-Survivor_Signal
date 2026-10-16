@@ -7,11 +7,13 @@
 [img]https://images.steamusercontent.com/ugc/15498700653854095205/8C36E43E87F795CF853249F3971F3AF623650923/[/img]
 
 [quote][b]신호는 조회한 순간의 위치를 보여 줍니다.[/b]
-실시간 추적이 아닙니다. 정상 핸드폰을 휴대한 다른 접속자만 검색되며, 내 위치도 같은 조건으로 다른 생존자의 조회에 포함됩니다.[/quote]
+실시간 추적이 아닙니다. 내구도와 배터리가 남은 핸드폰을 휴대한 다른 접속자만 검색되며, 내 위치도 같은 조건으로 다른 생존자의 조회에 포함됩니다.[/quote]
 
 [h2]흩어져도, 다시 만날 수 있도록[/h2]
 [list]
 [*]생존을 시작하면 전용 핸드폰 한 대를 받습니다. [b]무게는 0.1[/b]입니다.
+[*][b]v1.1.0 · 전자기기[/b] — 내구도 막대와 배터리 잔량을 확인하고 일반 배터리를 교체·분리할 수 있습니다.
+[*]조회당 배터리 [b]3%[/b]를 소모합니다. 교체 시 기존 배터리는 잔량을 유지해 돌려받으며 대기 중에는 소모하지 않습니다.
 [*]핸드폰을 우클릭해 [b]게임 속 하루에 한 번[/b] 다른 생존자의 위치를 조회합니다.
 [*]팝업에서 [b]이름과 X · Y · Z 좌표[/b]를 확인하고, 미니맵에서 위치 표시를 찾습니다.
 [*]조회할 때마다 기본 [b]내구도 3%[/b]를 사용합니다. 샌드박스에서 조정할 수 있습니다.
@@ -38,29 +40,34 @@
 [hr][/hr]
 [h2]작은 핸드폰, 알아둘 몇 가지[/h2]
 [list]
-[*][b]아무도 검색되지 않아도[/b] 그날의 사용 횟수와 내구도를 소모합니다.
-[*][b]내구도 0[/b]인 핸드폰으로 새 조회를 하거나 새 조회 대상이 될 수 없습니다. 마지막 조회로 고장 났다면 휴대 중인 동안 그날의 기록은 볼 수 있습니다.
+[*][b]아무도 검색되지 않아도[/b] 그날의 사용 횟수와 내구도·배터리를 소모합니다.
+[*][b]내구도 0 또는 배터리 없음·방전[/b]인 핸드폰으로 새 조회를 하거나 새 조회 대상이 될 수 없습니다. 마지막 조회로 고장 났다면 휴대 중인 동안 그날의 기록은 볼 수 있습니다.
 [*][b]사망·접속 종료·투명 상태[/b]인 플레이어는 새 조회 대상에서 제외됩니다. 조회 후 대상이 이동하거나 사망해도 이미 받은 좌표는 바뀌지 않습니다.
 [*][b]자정·조회자 사망·핸드폰 미소지[/b] 시 위치 기록과 표시를 지웁니다. 핸드폰을 잃어버리거나 버려도 자동으로 다시 지급하지 않습니다.
 [*][b]재접속하면 위치 기록은 사라집니다.[/b] 당일 사용 제한은 서버에 남습니다.
-[*][b]미니맵을 허용한 서버[/b]에서 지도 표시를 이용할 수 있습니다. 배터리·수리·제작 레시피는 추가하지 않습니다.
+[*][b]미니맵을 허용한 서버[/b]에서 지도 표시를 이용할 수 있습니다. 수리·제작 레시피는 추가하지 않습니다. 배터리 교체로 물리적 내구도가 회복되지는 않습니다.
 [/list]
+
+[h2]기존 핸드폰도 그대로[/h2]
+구형 핸드폰은 소지품·가방에서 전자기기로 1:1 변환되며 내구도·즐겨찾기·사용자 지정 이름을 유지합니다. 손에 장착했다면 먼저 해제하세요. 변환 시 최초 배터리는 완충됩니다. 기존 핸드폰이 있으면 추가 지급하지 않으며 이미 생긴 중복품을 자동 삭제하지 않습니다.
 
 [h2]설치와 호환[/h2]
 서버와 모든 접속자에게 같은 버전을 설치하세요. [b]Build 42.21 전용 멀티플레이[/b]를 대상으로 합니다. 일반 서버 설정에서 원래 공개하는 플레이어 위치는 이 모드와 별개입니다. 미니맵·인벤토리·플레이어 생성 과정을 변경하는 모드와는 별도 확인이 필요합니다.
 
 [h2]검증[/h2]
-서버 규칙 자동 테스트 [b]22개 통과[/b]. 게임에 포함된 Kahlua 컴파일러로 클라이언트·서버·공용 Lua 문법을 확인했습니다. NAS의 실제 42.21.0 전용 서버에서 아이템 생성·무게·내구도·샌드박스·가방 검색·번역·저장 API 접근을 확인했습니다. [b]실제 화면과 두 명의 동시 접속 검증은 미완료입니다.[/b] 검사 결과와 구체적인 범위는 저장소에서 확인할 수 있습니다.
+서버 규칙 자동 테스트 [b]35개 통과[/b]. 게임에 포함된 Kahlua 컴파일러로 클라이언트·서버·공용 Lua 문법을 확인했습니다. 실제 42.21.0 전용 서버에서 전자기기 생성·내구도·배터리 장착과 분리·구형 변환·1대 지급을 확인했습니다. [b]실제 화면과 두 명의 동시 접속 검증은 미완료입니다.[/b] 검사 결과와 구체적인 범위는 저장소에서 확인할 수 있습니다.
 
 [hr][/hr]
 [h2]ENGLISH · FIND YOUR FELLOW SURVIVORS[/h2]
 One phone. One signal each in-game day. A chance to meet again.
 
-Every survivor receives a [b]0.1-weight phone[/b]. Right-click it to locate other online survivors carrying working phones. The popup lists names and X/Y/Z coordinates; the minimap displays a [b]snapshot, not live tracking[/b].
+Every survivor receives a [b]0.1-weight phone[/b]. Right-click it to locate other online survivors carrying working, powered phones. The popup lists names and X/Y/Z coordinates; the minimap displays a [b]snapshot, not live tracking[/b].
 
 Default durability loss is [b]3 percentage points per scan[/b], configurable from 0–100 in Sandbox. Empty scans also cost durability and the daily allowance. The last use may break the phone; its existing snapshot remains viewable while a phone is carried. Broken phones cannot scan or appear in new scans.
 
-Carried bags count; ground and vehicle storage do not. Dead, disconnected and invisible players are excluded from new scans. Snapshots expire at game midnight, on death or when no phone is carried. Reconnecting clears the local snapshot but does not reset the account's daily allowance. No automatic replacement for lost phones, batteries, repairs or crafting recipes.
+Carried bags count; ground and vehicle storage do not. Dead, disconnected and invisible players are excluded from new scans. Snapshots expire at game midnight, on death or when no phone is carried. Reconnecting clears the local snapshot but does not reset the account's daily allowance. No automatic replacement for lost phones, repairs or crafting recipes.
+
+Version 1.1.0 uses a native portable electronic device with a visible condition bar and replaceable standard batteries. Each scan costs 3% battery; idle use costs none. Replacement returns the previous battery with its remaining charge and does not repair physical condition. Old phones migrate one-for-one, preserving condition, favourites and custom names; unequip old phones first. Existing duplicates are retained; starter grants are limited to one.
 
 Install on the server and every client. Build 42.21 multiplayer target. [b]GUI and real two-client gameplay testing remain pending.[/b]
 

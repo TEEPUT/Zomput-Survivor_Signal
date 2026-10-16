@@ -10,3 +10,6 @@ nas/
 private/
 output/
 node_modules/
+dist/
+__pycache__/
+*.pyc

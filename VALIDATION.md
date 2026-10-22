@@ -51,3 +51,5 @@ The test used a separate world and did not install the mod into the production w
 - Output: `SIGNAL_BEARING_PASS: engine axes + 8 compass directions + 2000m SE`.
 - Distances use the horizontal straight line from the server's snapshot origin, rounded to metres. Reopening a snapshot preserves that origin. Older server payloads capture the receiving local player's origin once for compatibility during updates.
 - In-game two-client visual verification remains pending.
+
+The existing 42.21 server completed its normal backup/update/restart on 2026-10-22 with v1.2.0 installed. Both `SERVER STARTED` and the mod ready event were observed, and the server responded ONLINE. Existing battery/device synchronization code is retained.

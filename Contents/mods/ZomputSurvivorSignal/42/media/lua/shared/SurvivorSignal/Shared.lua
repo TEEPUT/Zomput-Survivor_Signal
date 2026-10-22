@@ -39,6 +39,20 @@ function S.applyDeviceState(p, args)
     return true
 end
 
+-- One horizontal world tile is one metre. Map north is -Y, east is +X;
+-- the character's facing and the isometric screen rotation do not affect this.
+function S.relativeLocation(originX, originY, targetX, targetY)
+    local dx, dy = targetX-originX, targetY-originY
+    local distance = math.floor(math.sqrt(dx*dx+dy*dy)+0.5)
+    if dx == 0 and dy == 0 then return distance, "Here" end
+    local ax, ay = math.abs(dx), math.abs(dy)
+    local boundary = math.sqrt(2)-1 -- nearest of eight 45-degree compass sectors
+    if ay <= ax*boundary then return distance, dx > 0 and "E" or "W" end
+    if ax <= ay*boundary then return distance, dy > 0 and "S" or "N" end
+    if dy < 0 then return distance, dx > 0 and "NE" or "NW" end
+    return distance, dx > 0 and "SE" or "SW"
+end
+
 function S.day()
     local t = getGameTime()
     return string.format("%04d-%02d-%02d", t:getYear(), t:getMonth()+1, t:getDay()+1)

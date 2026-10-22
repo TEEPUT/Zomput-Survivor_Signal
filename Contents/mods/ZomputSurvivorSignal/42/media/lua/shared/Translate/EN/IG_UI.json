@@ -10,5 +10,14 @@
   "IGUI_SurvivorSignal_NoPhone": "Carry a working phone with battery power. Unequip a legacy phone to let it upgrade.",
   "IGUI_SurvivorSignal_Used": "Already used today. Available again at game midnight.",
   "IGUI_SurvivorSignal_ConditionLabel": "Condition",
-  "IGUI_SurvivorSignal_BatteryLabel": "Battery"
+  "IGUI_SurvivorSignal_BatteryLabel": "Battery",
+  "IGUI_SurvivorSignal_Direction_N": "N",
+  "IGUI_SurvivorSignal_Direction_NE": "NE",
+  "IGUI_SurvivorSignal_Direction_E": "E",
+  "IGUI_SurvivorSignal_Direction_SE": "SE",
+  "IGUI_SurvivorSignal_Direction_S": "S",
+  "IGUI_SurvivorSignal_Direction_SW": "SW",
+  "IGUI_SurvivorSignal_Direction_W": "W",
+  "IGUI_SurvivorSignal_Direction_NW": "NW",
+  "IGUI_SurvivorSignal_Direction_Here": "Here"
 }

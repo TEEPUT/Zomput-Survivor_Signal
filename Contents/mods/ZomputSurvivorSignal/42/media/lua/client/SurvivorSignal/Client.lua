@@ -24,7 +24,8 @@ local function show(pn, result)
         return y+self.itemheight
     end
     for _,r in ipairs(result.rows) do
-        list:addItem(r.name.."  X:"..r.x.." Y:"..r.y.." Z:"..r.z, r)
+        local metres, direction = S.relativeLocation(result.originX, result.originY, r.x, r.y)
+        list:addItem(r.name.."  "..metres.."m "..text("Direction_"..direction), r)
     end
     if #result.rows == 0 then list:addItem(text("Empty"), {}) end
     panel:addChild(list)
@@ -58,6 +59,13 @@ Events.OnServerCommand.Add(function(module, command, args)
                 local localPlayer = getSpecificPlayer(i)
                 if localPlayer and localPlayer:getUsername() == args.username then pn=i; break end
             end
+        end
+        -- Older servers may not include the scan origin during a rolling update.
+        -- Capture it once; reopening must not recalculate from a moved player.
+        if args.originX == nil or args.originY == nil then
+            local p = getSpecificPlayer(pn)
+            if not p then return end
+            args.originX, args.originY = p:getX(), p:getY()
         end
         snapshots[pn] = args
         show(pn, args)

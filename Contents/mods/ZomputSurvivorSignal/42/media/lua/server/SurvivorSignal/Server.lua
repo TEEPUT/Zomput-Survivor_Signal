@@ -93,8 +93,8 @@ function S.scan(p)
         local other = players:get(i)
         if other ~= p and S.alive(other) and S.phone(other:getInventory())
                 and not other:isInvisible() then
-            rows[#rows+1] = {name=other:getUsername(), x=math.floor(other:getX()),
-                y=math.floor(other:getY()), z=math.floor(other:getZ())}
+            rows[#rows+1] = {name=other:getUsername(), x=other:getX(),
+                y=other:getY(), z=math.floor(other:getZ())}
         end
     end
     table.sort(rows, function(a,b) return a.name < b.name end)
@@ -107,7 +107,7 @@ function S.scan(p)
     sendItemStats(phone)
     S.syncDevice(p,phone)
     reply(p, "result", {day=today, rows=rows, phoneId=phone:getID(), condition=phone:getCondition(),
-        power=math.floor(S.power(phone)*100+0.5), playerNum=p:getPlayerNum(), username=name})
+        power=math.floor(S.power(phone)*100+0.5), playerNum=p:getPlayerNum(), username=name, originX=p:getX(), originY=p:getY()})
 end
 Events.OnClientCommand.Add(function(module, command, p, args)
     if module ~= S.module or not p then return end

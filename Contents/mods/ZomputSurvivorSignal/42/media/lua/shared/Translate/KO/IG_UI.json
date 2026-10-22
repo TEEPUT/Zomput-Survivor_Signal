@@ -10,5 +10,14 @@
   "IGUI_SurvivorSignal_NoPhone": "내구도와 배터리가 남은 핸드폰이 필요합니다. 구형 핸드폰은 손에서 내려놓으면 변환됩니다.",
   "IGUI_SurvivorSignal_Used": "오늘은 이미 조회했습니다. 게임 시간 자정에 다시 사용할 수 있습니다.",
   "IGUI_SurvivorSignal_ConditionLabel": "내구도",
-  "IGUI_SurvivorSignal_BatteryLabel": "배터리"
+  "IGUI_SurvivorSignal_BatteryLabel": "배터리",
+  "IGUI_SurvivorSignal_Direction_N": "북",
+  "IGUI_SurvivorSignal_Direction_NE": "북동",
+  "IGUI_SurvivorSignal_Direction_E": "동",
+  "IGUI_SurvivorSignal_Direction_SE": "남동",
+  "IGUI_SurvivorSignal_Direction_S": "남",
+  "IGUI_SurvivorSignal_Direction_SW": "남서",
+  "IGUI_SurvivorSignal_Direction_W": "서",
+  "IGUI_SurvivorSignal_Direction_NW": "북서",
+  "IGUI_SurvivorSignal_Direction_Here": "같은 위치"
 }

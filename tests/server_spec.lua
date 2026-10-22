@@ -86,7 +86,8 @@ local function check(ok,label) assert(ok,label); count=count+1; print('PASS '..l
 SurvivorSignal.scan(a)
 check(aPhone.condition==97,'default three percent cost')
 check(#last().args.rows==1 and last().args.rows[1].name=='B','only carried working phone targets')
-check(last().args.rows[1].x==123 and last().args.rows[1].z==1,'server position including floor')
+check(last().args.rows[1].x==123.5 and last().args.rows[1].z==1,'server position preserves precision for relative distance')
+check(last().args.originX==123.5 and last().args.originY==456.7,'snapshot includes server-authoritative requester origin')
 check(last().args.username=='A','response identifies requesting split-screen account')
 SurvivorSignal.scan(a)
 check(last().args.key=='Used' and aPhone.condition==97,'duplicate scan is free and rejected')
@@ -194,4 +195,18 @@ local bagItem={getFullType=function() return 'Base.Bag' end,IsInventoryContainer
 local bagOwner=player('BagOwner',{bagItem})
 check(SurvivorSignal.applyDeviceState(bagOwner,{phoneId=bagDevice:getID(),condition=88,hasBattery=true,power=0.42})
     and bagDevice:getDeviceData():getPower()==0.42,'unequipped nested bag phone receives power state')
+for _,case in ipairs({
+    {0,-10,"N"}, {10,-10,"NE"}, {10,0,"E"}, {10,10,"SE"},
+    {0,10,"S"}, {-10,10,"SW"}, {-10,0,"W"}, {-10,-10,"NW"},
+    {0,0,"Here"}, {100,40,"E"}, {100,42,"SE"}, {40,-100,"N"}, {42,-100,"NE"}
+}) do
+    local _,direction=SurvivorSignal.relativeLocation(100,200,100+case[1],200+case[2])
+    check(direction==case[3],'map compass '..case[3]..' delta '..case[1]..','..case[2])
+end
+local metres,direction=SurvivorSignal.relativeLocation(-10102,33,-8902,1633)
+check(metres==2000 and direction=='SE','negative coordinates produce 2000m southeast example')
+metres,direction=SurvivorSignal.relativeLocation(0,0,0.3,0.4)
+check(metres==1 and direction=='SE','round distance to nearest metre')
+metres,direction=SurvivorSignal.relativeLocation(4.5,8.25,4.5,8.25)
+check(metres==0 and direction=='Here','same precise position is zero metres without false bearing')
 print(tostring(count)..' checks passed')

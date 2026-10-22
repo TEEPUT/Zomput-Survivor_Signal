@@ -6,7 +6,7 @@
 - The native radio sender resolves equipped devices or direct player containers; it cannot resolve an unequipped phone inside a bag. Added an owner-only, recursive item-ID state response after scans and custom battery insertion/removal. The client applies that state to the native DeviceData read by the standard power window, without sending a radio packet back.
 - The scan popup reads the scanned phone's current condition and battery when available, so a later battery replacement does not leave an old percentage in the open result window.
 - All 40 regression assertions and the three Python test cases pass, including literal percent output, recursive bag synchronization, native power changes and foreign item rejection.
-- This patch has not been verified with two connected game clients. The v1.1.0 native engine probe below predates these changes.
+- This patch has not been verified with two connected game clients. The v1.2.0 native engine probe below predates these changes.
 
 ## Version 1.1.0 — 2026-10-16
 
@@ -42,3 +42,12 @@ The NAS run exposed the B42 item property change from `Type = Normal` to `ItemTy
 Actual two-client gameplay, popup layout, minimap rendering, controller navigation, reconnect/save lifecycle over the network, conflict testing with other mods, and hostile client inventory tampering. Unit test doubles and server startup do not verify these. The daily rule and location disclosure are decided on the server, but this mod is not an anti-cheat system.
 
 The test used a separate world and did not install the mod into the production world. The temporary test server is stopped after validation.
+
+## 2026-10-22 — distance and map bearing (v1.2.0)
+
+- 57 regression assertions passed, including all eight map directions, sector boundaries, same-position handling, metre rounding, negative coordinates and the `2000m SE` example.
+- Production Lua compiled with the game's Kahlua compiler.
+- A bounded Java/Kahlua check ran inside the existing running `zomput-pz` container against its installed game JAR. It verified `IsoDirections` map axes (north -Y, east +X) and executed the new shared distance/bearing function. No additional game server was created.
+- Output: `SIGNAL_BEARING_PASS: engine axes + 8 compass directions + 2000m SE`.
+- Distances use the horizontal straight line from the server's snapshot origin, rounded to metres. Reopening a snapshot preserves that origin. Older server payloads capture the receiving local player's origin once for compatibility during updates.
+- In-game two-client visual verification remains pending.

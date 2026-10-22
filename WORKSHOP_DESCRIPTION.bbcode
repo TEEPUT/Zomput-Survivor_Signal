@@ -10,6 +10,9 @@
 [quote][b]신호는 조회한 순간의 위치를 보여 줍니다.[/b]
 실시간 추적이 아닙니다. 내구도와 배터리가 남은 핸드폰을 휴대한 다른 접속자만 검색되며, 내 위치도 같은 조건으로 다른 생존자의 조회에 포함됩니다.[/quote]
 
+[h2]v1.2.0 · 거리와 지도 방향 표시[/h2]
+좌표 대신 [b]2000m 남동[/b]처럼 조회 당시 내 위치에서의 거리와 지도 기준 8방향을 표시합니다.
+
 [h2]v1.1.1 · 표시 및 전력 동기화 수정[/h2]
 내구도·배터리의 퍼센트 표기를 수정하고, 가방 안 핸드폰의 전력 변경을 기본 기기 창에도 반영하도록 보완했습니다. 조회 결과 창의 상태는 해당 핸드폰의 현재 값을 표시합니다.
 
@@ -19,7 +22,7 @@
 [*][b]v1.1.0 · 전자기기[/b] — 내구도 막대와 배터리 잔량을 확인하고 일반 배터리를 교체·분리할 수 있습니다.
 [*]조회당 배터리 [b]3%[/b]를 소모합니다. 교체 시 기존 배터리는 잔량을 유지해 돌려받으며 대기 중에는 소모하지 않습니다.
 [*]핸드폰을 우클릭해 [b]게임 속 하루에 한 번[/b] 다른 생존자의 위치를 조회합니다.
-[*]팝업에서 [b]이름과 X · Y · Z 좌표[/b]를 확인하고, 미니맵에서 위치 표시를 찾습니다.
+[*]팝업에서 [b]이름 · 거리(m) · 지도 기준 방향[/b]을 확인합니다. 예: [b]2000m 남동[/b]. 미니맵에도 위치를 표시합니다.
 [*]조회할 때마다 기본 [b]내구도 3%[/b]를 사용합니다. 샌드박스에서 조정할 수 있습니다.
 [*]핸드폰은 인벤토리나 휴대한 가방 안에 있어야 합니다. 바닥과 차량 보관함은 포함하지 않습니다.
 [/list]
@@ -33,7 +36,7 @@
 [olist]
 [*][b]핸드폰을 챙기세요[/b] — 새 생존자에게 한 대를 지급합니다. 기존 캐릭터도 모드를 처음 적용하면 한 대를 받습니다.
 [*][b]하루의 신호를 사용하세요[/b] — 우클릭 → 생존자 위치 조회. 게임 날짜마다 한 번, 00:00에 다시 사용할 수 있습니다.
-[*][b]좌표를 따라 만나세요[/b] — 팝업과 미니맵에 조회 시점의 위치가 남습니다. 그날의 기록은 추가 소모 없이 다시 열 수 있습니다.
+[*][b]좌표를 따라 만나세요[/b] — 팝업과 미니맵에 조회 시점의 위치가 남습니다. 그날의 기록은 추가 소모 없이 다시 열 수 있습니다. 거리와 방향은 조회 당시 내 위치 기준이며 높이를 제외한 수평 직선거리입니다.
 [/olist]
 
 [h2]샌드박스 설정 · 내구도 감소율[/h2]
@@ -63,13 +66,15 @@
 서버와 모든 접속자에게 같은 버전을 설치하세요. [b]Build 42.21 전용 멀티플레이[/b]를 대상으로 합니다. 일반 서버 설정에서 원래 공개하는 플레이어 위치는 이 모드와 별개입니다. 미니맵·인벤토리·플레이어 생성 과정을 변경하는 모드와는 별도 확인이 필요합니다.
 
 [h2]검증[/h2]
-서버 규칙 자동 테스트 [b]40개 통과[/b]. 게임에 포함된 Kahlua 컴파일러로 클라이언트·서버·공용 Lua 문법을 확인했습니다. 실제 42.21.0 전용 서버에서 전자기기 생성·내구도·배터리 장착과 분리·구형 변환·1대 지급을 확인했습니다. [b]실제 화면과 두 명의 동시 접속 검증은 미완료입니다.[/b] 검사 결과와 구체적인 범위는 저장소에서 확인할 수 있습니다.
+서버 규칙 자동 테스트 [b]57개 통과[/b]. 게임에 포함된 Kahlua 컴파일러로 클라이언트·서버·공용 Lua 문법을 확인했습니다. 실제 42.21.0 전용 서버에서 전자기기 생성·내구도·배터리 장착과 분리·구형 변환·1대 지급을 확인했습니다. [b]실제 화면과 두 명의 동시 접속 검증은 미완료입니다.[/b] 검사 결과와 구체적인 범위는 저장소에서 확인할 수 있습니다.
 
 [hr][/hr]
 [h2]ENGLISH · FIND YOUR FELLOW SURVIVORS[/h2]
 One phone. One signal each in-game day. A chance to meet again.
 
-Every survivor receives a [b]0.1-weight phone[/b]. Right-click it to locate other online survivors carrying working, powered phones. The popup lists names and X/Y/Z coordinates; the minimap displays a [b]snapshot, not live tracking[/b].
+Every survivor receives a [b]0.1-weight phone[/b]. Right-click it to locate other online survivors carrying working, powered phones. The popup lists names, distance in metres and map compass bearing (e.g. 2000m SE); the minimap displays a [b]snapshot, not live tracking[/b].
+
+Distance is rounded to metres from your position at scan time, using eight map directions. Moving or turning after the scan does not change the saved reading.
 
 Default durability loss is [b]3 percentage points per scan[/b], configurable from 0–100 in Sandbox. Empty scans also cost durability and the daily allowance. The last use may break the phone; its existing snapshot remains viewable while a phone is carried. Broken phones cannot scan or appear in new scans.
 

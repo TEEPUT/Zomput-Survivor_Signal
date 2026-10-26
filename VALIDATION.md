@@ -62,3 +62,5 @@ The existing 42.21 server completed its normal backup/update/restart on 2026-10-
 - A bounded native engine check against the existing server installation confirmed that new SurvivorDesc objects have different IDs and native descriptor save/load preserves the ID. No additional server was created. Character modData also stores a UUID so reused native IDs do not identify a new survivor as the old one.
 - Server ModData persistence is covered by simulated module reload; actual two-client gameplay, network reconnect/save lifecycle and visual layout remain unverified. Existing battery and inventory regression cases continue to pass.
 - Only scans made with v1.3.0 or later are saved. Older memory-only snapshots cannot be recovered.
+
+The existing managed 42.21 server completed its normal backup/update/restart on 2026-10-26 with zero connected players before restart. Deployment reported SUCCESS and the server returned ONLINE. The installed server, client, shared Lua and Korean UI translation files matched the published v1.3.0 source by SHA-256. Native logs contained SERVER STARTED and the mod ready event. No additional server was created.

@@ -3,12 +3,12 @@
   "IGUI_SurvivorSignal_ReplaceBattery": "배터리 교체 (일반 배터리)",
   "IGUI_SurvivorSignal_RemoveBattery": "배터리 꺼내기",
   "IGUI_SurvivorSignal_Scan": "생존자 위치 조회 (게임 하루 1회)",
-  "IGUI_SurvivorSignal_Reopen": "오늘의 위치 기록 보기",
+  "IGUI_SurvivorSignal_Reopen": "이전 조회 기록 보기",
   "IGUI_SurvivorSignal_Close": "닫기",
   "IGUI_SurvivorSignal_Snapshot": "조회 시점의 위치 · 실시간 추적 아님",
   "IGUI_SurvivorSignal_Empty": "정상 핸드폰을 휴대한 다른 생존자가 없습니다.",
   "IGUI_SurvivorSignal_NoPhone": "내구도와 배터리가 남은 핸드폰이 필요합니다. 구형 핸드폰은 손에서 내려놓으면 변환됩니다.",
-  "IGUI_SurvivorSignal_Used": "오늘은 이미 조회했습니다. 게임 시간 자정에 다시 사용할 수 있습니다.",
+  "IGUI_SurvivorSignal_Used": "이 캐릭터는 오늘 이미 조회했습니다. 게임 시간 자정에 다시 사용할 수 있습니다.",
   "IGUI_SurvivorSignal_ConditionLabel": "내구도",
   "IGUI_SurvivorSignal_BatteryLabel": "배터리",
   "IGUI_SurvivorSignal_Direction_N": "북",
@@ -19,5 +19,11 @@
   "IGUI_SurvivorSignal_Direction_SW": "남서",
   "IGUI_SurvivorSignal_Direction_W": "서",
   "IGUI_SurvivorSignal_Direction_NW": "북서",
-  "IGUI_SurvivorSignal_Direction_Here": "같은 위치"
+  "IGUI_SurvivorSignal_Direction_Here": "같은 위치",
+  "IGUI_SurvivorSignal_SavedRecord": "저장된 조회 기록 · 당시 위치",
+  "IGUI_SurvivorSignal_Older": "더 이전 기록",
+  "IGUI_SurvivorSignal_Newer": "더 최근 기록",
+  "IGUI_SurvivorSignal_NoHistory": "이 캐릭터의 저장된 조회 기록이 없습니다.",
+  "IGUI_SurvivorSignal_CarryPhone": "조회 기록을 보려면 핸드폰을 휴대해야 합니다.",
+  "IGUI_SurvivorSignal_CharacterNotReady": "캐릭터 정보를 준비 중입니다. 잠시 후 다시 시도하세요."
 }

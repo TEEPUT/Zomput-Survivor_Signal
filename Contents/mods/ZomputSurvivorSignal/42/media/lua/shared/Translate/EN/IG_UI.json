@@ -3,12 +3,12 @@
   "IGUI_SurvivorSignal_ReplaceBattery": "Replace battery (standard battery)",
   "IGUI_SurvivorSignal_RemoveBattery": "Remove battery",
   "IGUI_SurvivorSignal_Scan": "Locate survivors (once per game day)",
-  "IGUI_SurvivorSignal_Reopen": "View today's signal snapshot",
+  "IGUI_SurvivorSignal_Reopen": "View saved signal history",
   "IGUI_SurvivorSignal_Close": "Close",
   "IGUI_SurvivorSignal_Snapshot": "Snapshot, not live tracking",
   "IGUI_SurvivorSignal_Empty": "No other survivors carrying a working phone.",
   "IGUI_SurvivorSignal_NoPhone": "Carry a working phone with battery power. Unequip a legacy phone to let it upgrade.",
-  "IGUI_SurvivorSignal_Used": "Already used today. Available again at game midnight.",
+  "IGUI_SurvivorSignal_Used": "This character already scanned today. Available again at game midnight.",
   "IGUI_SurvivorSignal_ConditionLabel": "Condition",
   "IGUI_SurvivorSignal_BatteryLabel": "Battery",
   "IGUI_SurvivorSignal_Direction_N": "N",
@@ -19,5 +19,11 @@
   "IGUI_SurvivorSignal_Direction_SW": "SW",
   "IGUI_SurvivorSignal_Direction_W": "W",
   "IGUI_SurvivorSignal_Direction_NW": "NW",
-  "IGUI_SurvivorSignal_Direction_Here": "Here"
+  "IGUI_SurvivorSignal_Direction_Here": "Here",
+  "IGUI_SurvivorSignal_SavedRecord": "Saved snapshot · past position",
+  "IGUI_SurvivorSignal_Older": "Older record",
+  "IGUI_SurvivorSignal_Newer": "Newer record",
+  "IGUI_SurvivorSignal_NoHistory": "This character has no saved signal records.",
+  "IGUI_SurvivorSignal_CarryPhone": "Carry a phone to view saved signal records.",
+  "IGUI_SurvivorSignal_CharacterNotReady": "Character information is not ready. Try again shortly."
 }

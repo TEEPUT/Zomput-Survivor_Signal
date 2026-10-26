@@ -1,15 +1,69 @@
 require "SurvivorSignal/Shared"
 local S = SurvivorSignal
 local ticks = 0
-local lastRequest = {}
+local lastRequest = setmetatable({}, {__mode="k"})
 local pending = setmetatable({}, {__mode="k"})
+local characterBindings = setmetatable({}, {__mode="k"})
+local function characterKey(p)
+    local key=characterBindings[p]
+    if not key then key=S.characterKey(p); characterBindings[p]=key end
+    return key
+end
 local function state()
     local data = ModData.getOrCreate(S.module)
-    data.used = data.used or {}
+    data.characters = data.characters or {}
     return data
+end
+function S.characterState(p)
+    local key = characterKey(p)
+    if not key then return nil end
+    local data, name = state(), p:getUsername()
+    data.characters[name] = data.characters[name] or {}
+    local characters = data.characters[name]
+    local record = characters[key]
+    local age = p:getHoursSurvived()
+    -- Also guard native ID reuse after a death or a new life with a lower age.
+    if not record or record.dead or (record.age and age+0.01 < record.age) then
+        record = {history={}}
+        characters[key] = record
+    end
+    record.age = age
+    return record
+end
+local function noteDeath(p)
+    if not p or not p:isDead() then return end
+    local key = characterKey(p)
+    local characters = state().characters[p:getUsername()]
+    if key and characters and characters[key] then characters[key].dead=true end
+end
+local function allowRequest(p, command)
+    local requests = lastRequest[p] or {}
+    lastRequest[p] = requests
+    if requests[command] and ticks-requests[command] < 30 then return false end
+    requests[command] = ticks
+    return true
 end
 local function reply(p, command, args)
     sendServerCommand(p, S.module, command, args)
+end
+local function replyRecord(p, saved, index, count)
+    reply(p, "result", {day=saved.day, time=saved.time, rows=saved.rows,
+        phoneId=saved.phoneId, condition=saved.condition, power=saved.power,
+        originX=saved.originX, originY=saved.originY,
+        playerNum=p:getPlayerNum(), username=p:getUsername(), characterId=characterKey(p),
+        historyIndex=index, historyCount=count})
+end
+function S.readHistory(p, args)
+    if not S.alive(p) then return end
+    if not S.phone(p:getInventory(), true) then reply(p,"error",{key="CarryPhone"}); return end
+    local record = S.characterState(p)
+    if not record then reply(p,"error",{key="CharacterNotReady"}); return end
+    local index = type(args)=="table" and args.index or 1
+    if index == nil then index=1 end
+    if type(index)~="number" or index~=math.floor(index) or index<1 or index>#record.history then
+        reply(p,"error",{key="NoHistory"}); return
+    end
+    replyRecord(p, record.history[index], index, #record.history)
 end
 function S.syncDevice(p, phone)
     local data=phone:getDeviceData()
@@ -83,9 +137,9 @@ function S.scan(p)
     if not S.alive(p) then return end
     local phone = S.phone(p:getInventory())
     if not phone then reply(p, "error", {key="NoPhone"}); return end
-    local data, today = state(), S.day()
-    local name = p:getUsername()
-    if data.used[name] == today then reply(p, "error", {key="Used"}); return end
+    local record, today = S.characterState(p), S.day()
+    if not record then reply(p,"error",{key="CharacterNotReady"}); return end
+    if record.lastDay == today then reply(p, "error", {key="Used"}); return end
     -- Nothing supplied by the client determines identity, position, cost or cooldown.
     local rows = {}
     local players = getOnlinePlayers()
@@ -98,21 +152,31 @@ function S.scan(p)
         end
     end
     table.sort(rows, function(a,b) return a.name < b.name end)
-    -- Reserve the account's day before the reply, including empty scans and final use.
-    data.used[name] = today
+    -- Reserve this character's day, including empty scans and final use.
+    record.lastDay = today
     phone:setCondition(math.max(0, phone:getCondition()-S.loss()))
     local device = phone:getDeviceData()
     device:setPower(math.max(0, device:getPower()-0.03))
     device:transmitBatteryChangeServer()
     sendItemStats(phone)
     S.syncDevice(p,phone)
-    reply(p, "result", {day=today, rows=rows, phoneId=phone:getID(), condition=phone:getCondition(),
-        power=math.floor(S.power(phone)*100+0.5), playerNum=p:getPlayerNum(), username=name, originX=p:getX(), originY=p:getY()})
+    local t=getGameTime()
+    local saved={day=today,time=string.format("%02d:%02d",t:getHour(),t:getMinutes()),
+        rows=rows,phoneId=phone:getID(),condition=phone:getCondition(),
+        power=math.floor(S.power(phone)*100+0.5),originX=p:getX(),originY=p:getY()}
+    table.insert(record.history,1,saved)
+    while #record.history>S.historyLimit do table.remove(record.history) end
+    replyRecord(p,saved,1,#record.history)
 end
 Events.OnClientCommand.Add(function(module, command, p, args)
     if module ~= S.module or not p then return end
     if command == "starter" then
         if not S.alive(p) then return end
+        if not characterBindings[p] and type(args)=="table" and S.validLifeId(args.lifeId) then
+            local md=p:getModData()
+            if not S.validLifeId(md.SurvivorSignalLifeId) then md.SurvivorSignalLifeId=args.lifeId end
+            characterBindings[p]=S.characterKey(p)
+        end
         if type(args)=="table" and (args.hasPhone==true or args.granted==true) then
             p:getModData().SurvivorSignalGranted=true
         end
@@ -120,19 +184,18 @@ Events.OnClientCommand.Add(function(module, command, p, args)
         return
     end
     if command == "battery" then
-        local name = p:getUsername()
-        if lastRequest[name] and ticks-lastRequest[name] < 30 then return end
-        lastRequest[name]=ticks
+        if not allowRequest(p,command) then return end
         S.changeBattery(p,args)
         return
     end
     if command == "scan" then
-        local name = p:getUsername()
-        if lastRequest[name] and ticks-lastRequest[name] < 30 then return end
-        lastRequest[name] = ticks
+        if not allowRequest(p,command) then return end
         S.scan(p)
+    elseif command == "history" then
+        if allowRequest(p,command) then S.readHistory(p,args) end
     end
 end)
+Events.OnPlayerDeath.Add(noteDeath)
 Events.OnServerStarted.Add(function()
     print("[ZomputSurvivorSignal] ready; durability loss="..S.loss().."%")
 end)
@@ -143,6 +206,7 @@ Events.OnTick.Add(function()
     local players = getOnlinePlayers()
     for i=0,players:size()-1 do
         local p=players:get(i)
+        noteDeath(p)
         if S.alive(p) then S.migrate(p) end
         if S.alive(p) and pending[p] and ticks-pending[p] >= 120 and S.grant(p) then
             pending[p]=nil

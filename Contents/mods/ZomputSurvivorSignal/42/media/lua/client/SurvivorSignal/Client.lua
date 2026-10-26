@@ -13,7 +13,7 @@ local function closeWindow(panel)
 end
 local function show(pn, result)
     closeWindow(windows[pn])
-    local panel = ISPanel:new(getPlayerScreenLeft(pn)+30, getPlayerScreenTop(pn)+60, 460, 330)
+    local panel = ISPanel:new(getPlayerScreenLeft(pn)+30, getPlayerScreenTop(pn)+60, 460, 360)
     panel:initialise()
     panel.moveWithMouse = true
     panel.backgroundColor = {r=0.06,g=0.08,b=0.07,a=0.96}
@@ -31,7 +31,7 @@ local function show(pn, result)
     panel:addChild(list)
     function panel:render()
         ISPanel.render(self)
-        self:drawText("Survivor Signal | "..result.day, 12, 10, 0.6, 1, 0.6, 1, UIFont.Medium)
+        self:drawText("Survivor Signal | "..result.day.." "..(result.time or ""), 12, 10, 0.6, 1, 0.6, 1, UIFont.Medium)
         local p=getSpecificPlayer(pn)
         local phone=p and result.phoneId and p:getInventory():getItemWithIDRecursiv(result.phoneId)
         local condition,power=result.condition,result.power or 0
@@ -39,8 +39,19 @@ local function show(pn, result)
             condition=phone:getCondition(); power=math.floor(S.power(phone)*100+0.5)
         end
         self:drawText(S.status(condition,power), 12, 31, 1,1,1,1,UIFont.Small)
+        self:drawText(text("SavedRecord").." "..(result.historyIndex or 1).."/"..(result.historyCount or 1),
+            12,282,0.75,0.85,0.75,1,UIFont.Small)
     end
-    local button = ISButton:new(330, 289, 115, 28, text("Close"), panel, closeWindow)
+    local function navigate(_, _, index)
+        local p=getSpecificPlayer(pn)
+        if p then sendClientCommand(p,S.module,"history",{index=index}) end
+    end
+    local index,count=result.historyIndex or 1,result.historyCount or 1
+    local older=ISButton:new(12,312,115,28,text("Older"),panel,function() navigate(nil,nil,index+1) end)
+    older:initialise(); older:setEnable(index<count); panel:addChild(older)
+    local newer=ISButton:new(136,312,115,28,text("Newer"),panel,function() navigate(nil,nil,index-1) end)
+    newer:initialise(); newer:setEnable(index>1); panel:addChild(newer)
+    local button = ISButton:new(330, 312, 115, 28, text("Close"), panel, closeWindow)
     button:initialise(); panel:addChild(button)
     panel:addToUIManager(); windows[pn] = panel
 end
@@ -61,6 +72,8 @@ Events.OnServerCommand.Add(function(module, command, args)
             end
         end
         -- Older servers may not include the scan origin during a rolling update.
+        local recipient=getSpecificPlayer(pn)
+        if not recipient or (args.characterId and args.characterId~=S.characterKey(recipient)) then return end
         -- Capture it once; reopening must not recalculate from a moved player.
         if args.originX == nil or args.originY == nil then
             local p = getSpecificPlayer(pn)
@@ -108,10 +121,10 @@ Events.OnFillInventoryObjectContextMenu.Add(function(pn, context, items)
         sendClientCommand(player, S.module, "scan", {})
     end)
     option.notAvailable = not S.phone(p:getInventory())
-    local saved = snapshots[pn]
-    if saved and saved.day == S.day() and S.phone(p:getInventory(), true) then
-        context:addOption(text("Reopen"), pn, function(n) show(n, saved) end)
-    end
+    local history=context:addOption(text("Reopen"),p,function(player)
+        sendClientCommand(player,S.module,"history",{})
+    end)
+    history.notAvailable=not S.phone(p:getInventory(),true)
 end)
 
 -- A normal inventory item never receives vanilla's weapon condition row.
@@ -129,14 +142,25 @@ end
 -- Ask only after local character/inventory initialization. The hint can decline a
 -- starter grant, never request extra copies. Server inventory is checked again.
 local starterSent={}
-Events.OnCreatePlayer.Add(function(pn) starterSent[pn]=nil end)
+local function ensureLifeId(p)
+    local md=p:getModData()
+    if not S.validLifeId(md.SurvivorSignalLifeId) then md.SurvivorSignalLifeId=getRandomUUID() end
+end
+Events.OnCreatePlayer.Add(function(pn)
+    starterSent[pn]=nil
+    closeWindow(windows[pn]); windows[pn]=nil; snapshots[pn]=nil
+    local p=getSpecificPlayer(pn)
+    if p then ensureLifeId(p) end
+end)
 Events.OnTick.Add(function()
     for pn=0,3 do
         local p=getSpecificPlayer(pn)
         if S.alive(p) and not starterSent[pn] then
+            ensureLifeId(p)
             starterSent[pn]=true
             sendClientCommand(p,S.module,"starter",{hasPhone=S.phone(p:getInventory(),true)~=nil,
-                granted=p:getModData().SurvivorSignalGranted==true})
+                granted=p:getModData().SurvivorSignalGranted==true,
+                lifeId=p:getModData().SurvivorSignalLifeId})
         end
     end
 end)
@@ -146,7 +170,8 @@ function ISMiniMapOuter:render()
     if oldRender then oldRender(self) end
     local pn = self.playerNum or self.inner.playerNum or 0
     local p, saved = getSpecificPlayer(pn), snapshots[pn]
-    if not S.alive(p) or not S.phone(p:getInventory(), true) or not saved or saved.day ~= S.day() then return end
+    if not S.alive(p) or not S.phone(p:getInventory(), true) or not saved
+        or (saved.characterId and saved.characterId~=S.characterKey(p)) then return end
     local inner, api = self.inner, self.inner.mapAPI
     for _,r in ipairs(saved.rows) do
         local x,y = api:worldToUIX(r.x,r.y), api:worldToUIY(r.x,r.y)
@@ -160,7 +185,8 @@ Events.OnTick.Add(function()
     n=n+1; if n%60 ~= 0 then return end
     for pn, saved in pairs(snapshots) do
         local p = getSpecificPlayer(pn)
-        if not S.alive(p) or not S.phone(p:getInventory(), true) or saved.day ~= S.day() then
+        if not S.alive(p) or not S.phone(p:getInventory(), true)
+            or (saved.characterId and saved.characterId~=S.characterKey(p)) then
             closeWindow(windows[pn]); windows[pn]=nil; snapshots[pn]=nil
         end
     end

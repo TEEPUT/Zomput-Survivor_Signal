@@ -53,3 +53,12 @@ The test used a separate world and did not install the mod into the production w
 - In-game two-client visual verification remains pending.
 
 The existing 42.21 server completed its normal backup/update/restart on 2026-10-22 with v1.2.0 installed. Both `SERVER STARTED` and the mod ready event were observed, and the server responded ONLINE. Existing battery/device synchronization code is retained.
+
+## 2026-10-26 — per-character allowance and saved history (v1.3.0)
+
+- 80 server assertions and 9 client assertions passed using Lua 5.1, with syntax and EN/KO translation parity checks. Cases cover same-account respawn, reconnect, persistent life UUIDs, native descriptor ID reuse, rejected live-character rebinding, seven-record retention, historical selection, independent request throttles, broken/unpowered phones and no-cost history access.
+- Client doubles verify closing/reopening the popup, older/newer navigation, character replacement and rejection of late responses belonging to the previous character.
+- All production Lua compiled with the installed 42.21 Kahlua compiler.
+- A bounded native engine check against the existing server installation confirmed that new SurvivorDesc objects have different IDs and native descriptor save/load preserves the ID. No additional server was created. Character modData also stores a UUID so reused native IDs do not identify a new survivor as the old one.
+- Server ModData persistence is covered by simulated module reload; actual two-client gameplay, network reconnect/save lifecycle and visual layout remain unverified. Existing battery and inventory regression cases continue to pass.
+- Only scans made with v1.3.0 or later are saved. Older memory-only snapshots cannot be recovered.

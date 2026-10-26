@@ -19,6 +19,11 @@ class Tests(unittest.TestCase):
         for path in LUA.rglob('*.lua'):
             lua.execute('assert(loadstring(...))',path.read_text(encoding='utf-8'))
 
+    def test_client_history(self):
+        lua=LuaRuntime()
+        lua.globals().arg=lua.table_from({1:str(LUA).replace('\\','/')})
+        lua.execute((ROOT/'tests/client_spec.lua').read_text(encoding='utf-8'))
+
     def test_translations(self):
         for name in ('IG_UI.json','ItemName.json','Sandbox.json'):
             en,ko=[json.loads((LUA/'shared/Translate'/locale/name).read_text(encoding='utf-8')) for locale in ('EN','KO')]

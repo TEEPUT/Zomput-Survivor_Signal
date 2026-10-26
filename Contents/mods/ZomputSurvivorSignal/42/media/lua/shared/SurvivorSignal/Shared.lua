@@ -3,6 +3,24 @@ local S = SurvivorSignal
 S.module = "ZomputSurvivorSignal"
 S.item = "SurvivorSignal.PhoneDevice"
 S.legacyItem = "SurvivorSignal.Phone"
+S.historyLimit = 7
+
+function S.validLifeId(id)
+    return type(id)=="string" and #id==36
+        and id:match("^%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x$")~=nil
+end
+
+-- UUID lives in the character save, so native descriptor counters may safely restart.
+-- The server binds it once at character initialization and owns all scan/history data.
+function S.characterKey(p)
+    local lifeId=p and p:getModData().SurvivorSignalLifeId
+    if S.validLifeId(lifeId) then return "life:"..lifeId end
+    -- Compatibility for characters initialized by an older client.
+    local descriptor = p and p:getDescriptor()
+    local id = descriptor and descriptor:getID()
+    if type(id) ~= "number" or id ~= id or id < 0 or id ~= math.floor(id) then return nil end
+    return tostring(id)
+end
 
 function S.isPhone(item)
     return item and (item:getFullType() == S.item or item:getFullType() == S.legacyItem)

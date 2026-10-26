@@ -6,7 +6,7 @@ Events = setmetatable({}, {__index=function(t,k)
     local event={Add=function(fn) handlers[k]=fn end}; rawset(t,k,event); return event
 end})
 local date = 1
-function getGameTime() return {getYear=function() return 1993 end,getMonth=function() return 6 end,getDay=function() return date end} end
+function getGameTime() return {getYear=function() return 1993 end,getMonth=function() return 6 end,getDay=function() return date end,getHour=function() return 12 end,getMinutes=function() return 34 end} end
 SandboxVars={SurvivorSignal={DurabilityLoss=3}}
 local storage={}
 ModData={getOrCreate=function() return storage end}
@@ -66,9 +66,13 @@ local function inventory(items)
     return inv
 end
 function instanceItem(fullType) return phone(100,fullType) end
-local function player(name,items)
+local nextCharacter=0
+local function player(name,items,characterId)
+    nextCharacter=nextCharacter+1
+    characterId=characterId or nextCharacter
     local md={}
-    return {getUsername=function() return name end,getInventory=function() return inventory(items) end,
+    return {characterId=characterId,getDescriptor=function() return {getID=function() return characterId end} end,
+        getHoursSurvived=function(self) return self.age or 1 end,getUsername=function() return name end,getInventory=function() return inventory(items) end,
         isDead=function(self) return self.dead or false end,getHealth=function() return 100 end,
         isInvisible=function(self) return self.hidden or false end,getModData=function() return md end,
         getX=function() return 123.5 end,getY=function() return 456.7 end,getZ=function() return 1 end,
@@ -91,13 +95,13 @@ check(last().args.originX==123.5 and last().args.originY==456.7,'snapshot includ
 check(last().args.username=='A','response identifies requesting split-screen account')
 SurvivorSignal.scan(a)
 check(last().args.key=='Used' and aPhone.condition==97,'duplicate scan is free and rejected')
-a=player('A',{phone(100)})
+a=player('A',{phone(100)},a.characterId)
 SurvivorSignal.scan(a)
-check(last().args.key=='Used','reconnect / respawn / different phone cannot bypass account day')
+check(last().args.key=='Used','same character reconnect or different phone cannot reset day')
 date=2; SurvivorSignal.scan(a)
 check(last().command=='result','midnight resets daily permission')
 SurvivorSignal.scan(empty)
-check(last().args.key=='NoPhone' and not storage.used.NoPhone,'no phone does not consume day')
+check(last().args.key=='NoPhone' and not storage.characters.NoPhone,'no phone does not consume day')
 date=3; bPhone.condition=0; players={a,b}; SurvivorSignal.scan(a)
 check(#last().args.rows==0,'broken target excluded and empty scan accepted')
 date=4; SandboxVars.SurvivorSignal.DurabilityLoss=100; SurvivorSignal.scan(a)
@@ -209,4 +213,73 @@ metres,direction=SurvivorSignal.relativeLocation(0,0,0.3,0.4)
 check(metres==1 and direction=='SE','round distance to nearest metre')
 metres,direction=SurvivorSignal.relativeLocation(4.5,8.25,4.5,8.25)
 check(metres==0 and direction=='Here','same precise position is zero metres without false bearing')
+SandboxVars.SurvivorSignal.DurabilityLoss=3
+local reborn=player('A',{phone(100)})
+SurvivorSignal.scan(reborn)
+check(last().command=='result' and last().args.historyCount==1,'new survivor on same account can scan immediately')
+check(SurvivorSignal.characterState(a).lastDay~=SurvivorSignal.characterState(reborn).lastDay,
+    'same account characters have independent daily allowances')
+local result=last().args
+SurvivorSignal.readHistory(reborn,{})
+check(last().args.day==result.day and last().args.rows==result.rows,'history returns saved snapshot')
+check(last().args.originX==result.originX and last().args.time=='12:34','history preserves scan origin and timestamp')
+check(SurvivorSignal.phone(reborn:getInventory()):getCondition()==97,'history consumes no durability')
+SurvivorSignal.scan(reborn)
+check(last().args.key=='Used','reading history does not reset daily allowance')
+local h=player('History',{phone(100)})
+for i=10,17 do date=i; SurvivorSignal.scan(h) end
+check(#SurvivorSignal.characterState(h).history==7,'only seven most recent scans retained')
+SurvivorSignal.readHistory(h,{index=7})
+check(last().args.day=='1993-07-12' and last().args.historyIndex==7,'oldest retained scan is selectable')
+local historicalDay=last().args.day
+local hp=SurvivorSignal.phone(h:getInventory()); local oldCondition=hp:getCondition(); hp:setCondition(0)
+date=18; SurvivorSignal.readHistory(h,{index=7})
+check(last().args.day==historicalDay,'broken phone can read a previous-day record')
+hp:setCondition(oldCondition)
+SurvivorSignal.readHistory(h,{index=0})
+check(last().args.key=='NoHistory','invalid history index rejected')
+SurvivorSignal.readHistory(h,{index=1.5})
+check(last().args.key=='NoHistory','fractional history index rejected')
+local fresh=player('History',{phone(100)})
+SurvivorSignal.readHistory(fresh,{})
+check(last().args.key=='NoHistory','new character cannot inherit dead character history')
+local reconnected=player('History',{hp},h.characterId)
+package.loaded['SurvivorSignal/Server']=nil
+require 'SurvivorSignal/Server'
+SurvivorSignal.readHistory(reconnected,{index=2})
+check(last().args.historyIndex==2 and last().args.historyCount==7,'history survives server module reload and reconnect')
+date=17; SurvivorSignal.scan(reconnected)
+check(last().args.key=='Used','daily allowance survives server module reload')
+local noDesc=player('NoDescriptor',{phone(100)})
+noDesc.getDescriptor=function() return nil end
+SurvivorSignal.scan(noDesc)
+check(last().args.key=='CharacterNotReady','uninitialized descriptor cannot scan or spend durability')
+reconnected.dead=true; handlers.OnPlayerDeath(reconnected)
+local reused=player('History',{phone(100)},h.characterId)
+SurvivorSignal.scan(reused)
+check(last().command=='result' and last().args.historyCount==1,'confirmed death resets a reused native descriptor id')
+local ageReset=player('History',{phone(100)},h.characterId); ageReset.age=0
+SurvivorSignal.scan(ageReset)
+check(last().command=='result','lower survival age identifies new life if native descriptor is reused')
+local noRecords=player('NoRecords',{phone(100)})
+SurvivorSignal.readHistory(noRecords,{})
+check(last().args.key=='NoHistory','empty history is explained without spending a scan')
+check(SurvivorSignal.characterState(noRecords).lastDay==nil,'opening empty history does not consume the day')
+local life1='11111111-1111-4111-8111-111111111111'
+local life2='22222222-2222-4222-8222-222222222222'
+local uuidPlayer=player('UuidAccount',{phone(100)},500)
+uuidPlayer:getModData().SurvivorSignalLifeId=life1
+SurvivorSignal.scan(uuidPlayer)
+local replacement=player('UuidAccount',{phone(100)},500)
+replacement:getModData().SurvivorSignalLifeId=life2
+SurvivorSignal.scan(replacement)
+check(last().command=='result','different saved UUID separates new character even with identical native id and age')
+local uuidReconnect=player('UuidAccount',{phone(100)},999)
+uuidReconnect:getModData().SurvivorSignalLifeId=life2
+SurvivorSignal.scan(uuidReconnect)
+check(last().args.key=='Used','same saved UUID preserves daily allowance if native connection descriptor changes')
+handlers.OnClientCommand(SurvivorSignal.module,'starter',uuidReconnect,{lifeId=life1})
+SurvivorSignal.scan(uuidReconnect)
+check(last().args.key=='Used','starter replay cannot rebind an initialized live character')
+check(not SurvivorSignal.validLifeId('bad-id') and not SurvivorSignal.validLifeId(123),'malformed life identifiers rejected')
 print(tostring(count)..' checks passed')
